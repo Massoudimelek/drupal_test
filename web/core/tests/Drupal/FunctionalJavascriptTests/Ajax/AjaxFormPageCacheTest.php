@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\FunctionalJavascriptTests\Ajax;
 
 use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
@@ -19,7 +21,7 @@ class AjaxFormPageCacheTest extends WebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected $defaultTheme = 'starterkit_theme';
+  protected $defaultTheme = 'stark';
 
   /**
    * {@inheritdoc}
@@ -125,7 +127,7 @@ class AjaxFormPageCacheTest extends WebDriverTestBase {
     // When the AJAX command updates the DOM a <ul> unsorted list
     // "message__list" structure will appear on the page echoing back the
     // "some dumb text" message.
-    $placeholder = $this->assertSession()->waitForElement('css', "ul.messages__list li.messages__item em:contains('some dumb text')");
+    $placeholder = $this->assertSession()->waitForElement('css', "[aria-label='Status message'] > ul > li > em:contains('some dumb text')");
     $this->assertNotNull($placeholder, 'Message structure containing input data located.');
   }
 
