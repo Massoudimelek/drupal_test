@@ -1,119 +1,129 @@
-# Drupal Container (Built with Ansible)
+# Docker-based Drupal stack
 
-[![CI](https://github.com/geerlingguy/drupal-container/actions/workflows/build.yml/badge.svg)](https://github.com/geerlingguy/drupal-container/actions/workflows/build.yml) [![Docker pulls](https://img.shields.io/docker/pulls/geerlingguy/drupal)](https://hub.docker.com/r/geerlingguy/drupal/)
+[![Build Status](https://github.com/wodby/docker4drupal/workflows/Run%20tests/badge.svg)](https://github.com/wodby/docker4drupal/actions)
 
-This project is composed of three main parts:
+## Introduction
 
-  - **Ansible project**: This project is maintained on GitHub: [geerlingguy/drupal-container](https://github.com/geerlingguy/drupal-container). Please file issues, support requests, etc. against this GitHub repository.
-  - **Docker Hub Image**: If you just want to use [the `geerlingguy/drupal` Docker image](https://hub.docker.com/r/geerlingguy/drupal/) in your project, you can pull it from Docker Hub.
-  - **Ansible Role**: If you need a flexible Ansible role that's compatible with both traditional servers and containerized builds, check out [`geerlingguy.docker`](https://galaxy.ansible.com/geerlingguy/docker/) on Ansible Galaxy. (This is the Ansible role that does the bulk of the work in managing the Docker container.)
+Docker4Drupal is a set of docker images optimized for Drupal. Use `docker-compose.yml` file from the [latest stable release](https://github.com/wodby/docker4drupal/releases) to spin up local environment on Linux, Mac OS X and Windows. 
 
-## Versions
+* Read the docs on [**how to use**](https://wodby.com/docs/stacks/drupal/local#usage)
+* Ask questions on [Discord](http://discord.wodby.com/)
+* Ask questions on [Slack](http://slack.wodby.com/)
+* Follow [@wodbycloud](https://twitter.com/wodbycloud) for future announcements
 
-Currently maintained versions include:
+## Stack
 
-  - `latest`
-  - `latest-arm64`
-  - `latest-arm32v7`
+The Drupal stack consist of the following containers:
 
-## Standalone Usage
+| Container       | Versions                    | Image                              | ARM64 support | Enabled by default |
+|-----------------|-----------------------------|------------------------------------|---------------|--------------------|
+| [Nginx]         | 1.25, 1.24                  | [wodby/nginx]                      | ✓             | ✓                  |
+| [Apache]        | 2.4                         | [wodby/apache]                     | ✓             |                    |
+| [Drupal]        | 10, 7                       | [wodby/drupal]                     | ✓             | ✓                  |
+| [PHP]           | 8.3, 8.2, 8.1               | [wodby/drupal-php]                 | ✓             |                    |
+| Crond           |                             | [wodby/drupal-php]                 | ✓             | ✓                  |
+| [MariaDB]       | 11, 10.11, 10.6, 10.5, 10.4 | [wodby/mariadb]                    | ✓             | ✓                  |
+| [PostgreSQL]    | 16, 15, 14, 13, 12          | [wodby/postgres]                   | ✓             |                    |
+| [Redis]         | 7, 6                        | [wodby/redis]                      | ✓             |                    |
+| [Memcached]     | 1                           | [wodby/memcached]                  |               |                    |
+| [Varnish]       | 6.0                         | [wodby/varnish]                    | ✓             |                    |
+| [Node.js]       | 20, 18                      | [wodby/node]                       |               |                    |
+| [Drupal node]   | 1.0                         | [wodby/drupal-node]                |               |                    |
+| [Solr]          | 8, 7, 6, 5                  | [wodby/solr]                       |               |                    |
+| Zookeeper       | 3.8                         | [zookeeper]                        |               |                    |
+| [Elasticsearch] | 7                           | [wodby/elasticsearch]              |               |                    |
+| [Kibana]        | 7                           | [wodby/kibana]                     |               |                    |
+| [OpenSMTPD]     | 6.0                         | [wodby/opensmtpd]                  |               |                    |
+| [Mailhog]       | latest                      | [mailhog/mailhog]                  |               | ✓                  |
+| [AthenaPDF]     | 2.16.0                      | [arachnysdocker/athenapdf-service] |               |                    |
+| [Rsyslog]       | latest                      | [wodby/rsyslog]                    |               |                    |
+| [Webgrind]      | 1                           | [wodby/webgrind]                   |               |                    |
+| [Xhprof viewer] | latest                      | [wodby/xhprof]                     |               |                    |
+| Adminer         | 4.6                         | [wodby/adminer]                    |               |                    |
+| phpMyAdmin      | latest                      | [phpmyadmin/phpmyadmin]            |               |                    |
+| Selenium chrome | 3.141                       | [selenium/standalone-chrome]       |               |                    |
+| Traefik         | latest                      | [_/traefik]                        | ✓             | ✓                  |
+ 
+Supported Drupal versions: 10 / 7
 
-The easiest way to use this Docker image is to place the `docker-compose.yml` file included with this project in your Drupal site's root directory, then customize it to your liking, and run:
+## Documentation
 
-    docker-compose up -d
+Full documentation is available at https://wodby.com/docs/stacks/drupal/local.
 
-You should be able to access the Drupal site at `http://localhost/`, and if you're installing the first time, the Drupal installer UI should appear. Follow the directions and you'll end up with a brand new Drupal site!
+## Image's tags
 
-### Automatic Drupal codebase generation
+Images' tags format is `[VERSION]-[STABILITY_TAG]` where:
 
-The image downloads Drupal into `/var/www/html` if you don't have a Drupal codebase mounted into that path by default.
+`[VERSION]` is the _version of an application_ (without patch version) running in a container, e.g. `wodby/nginx:1.15-x.x.x` where Nginx version is `1.15` and `x.x.x` is a stability tag. For some images we include both major and minor version like PHP `7.2`, for others we include only major like Redis `5`. 
 
-You can override this behavior (if, for example, you are sharing your codebase into `/var/www/html/web` or elsewhere) by setting the environment variable `DRUPAL_DOWNLOAD_IF_NOT_PRESENT=false`.
+`[STABILITY_TAG]` is the _version of an image_ that corresponds to a git tag of the image repository, e.g. `wodby/mariadb:10.2-3.3.8` has MariaDB `10.2` and stability tag [`3.3.8`](https://github.com/wodby/mariadb/releases/tag/3.3.8). New stability tags include patch updates for applications and image's fixes/improvements (new env vars, orchestration actions fixes, etc). Stability tag changes described in the corresponding a git tag description. Stability tags follow [semantic versioning](https://semver.org/).
 
-There are three methods you can use to generate a Drupal codebase if you don't have one mounted into this container (or `COPY`ed into the container via `Dockerfile`):
+We highly encourage to use images only with stability tags.
 
-  - `DRUPAL_DOWNLOAD_METHOD=tarball` (default): Downloads the latest tarball version of Drupal core.
-  - `DRUPAL_DOWNLOAD_METHOD=git`: Clones Drupal from the git source, with options:
-    - `DRUPAL_CLONE_URL`: The URL from which Drupal is cloned.
-    - `DRUPAL_CLONE_BRANCH`: The branch that is checked out.
-  - `DRUPAL_DOWNLOAD_METHOD=composer`: Creates a new Drupal project using `composer create-project`. If using this method, you should also override the following variables:
-    - `DRUPAL_PROJECT_ROOT=/var/www/html`
-    - `APACHE_DOCUMENT_ROOT=/var/www/html/web`
+## Maintenance
 
-### Drupal codebase
+We regularly update images used in this stack and release them together, see [releases page](https://github.com/wodby/docker4drupal/releases) for full changelog and update instructions. Most of routine updates for images and this project performed by [the bot](https://github.com/wodbot) via scripts located at [wodby/images](https://github.com/wodby/images).
 
-To get your Drupal codebase into the container, you can either `COPY` it in using a Dockerfile, or mount a volume (e.g. when using the image for development). The included `docker-compose.yml` file assumes you have a Drupal codebase at the path `./web`, but you can customize the volume mount to point to wherever your Drupal docroot exists.
+## Beyond local environment
 
-If you don't supply a Drupal codebase in the container in `/var/www/html`, this container's `docker-entrypoint.sh` script will download Drupal for you (using the `DRUPAL_DOWNLOAD_VERSION`). By default the image uses the latest development release of Drupal, but you can override it and install a specific version by setting `DRUPAL_DOWNLOAD_VERSION` to that version number (e.g. `9.2.1`).
+Docker4Drupal is a project designed to help you spin up local environment with docker-compose. If you want to deploy a consistent stack with orchestrations to your own server, check out [Drupal stack](https://wodby.com/stacks/drupal) on Wodby ![](https://www.google.com/s2/favicons?domain=wodby.com).
 
-### Settings in `settings.php`
+## Other Docker4x projects
 
-Since it's best practice to _not_ include secrets like database credentials in your codebase, this Docker container recommends putting connection details into runtime environment variables, which you can include in your Drupal site's `settings.php` file via `getenv()`.
-
-For example, to set up the database connection, pass settings like `DRUPAL_DATABASE_NAME`:
-
-    $databases['default']['default'] = [
-      'driver' => 'mysql',
-      'database' => getenv('DRUPAL_DATABASE_NAME'),
-      'username' => getenv('DRUPAL_DATABASE_USERNAME'),
-      'password' => getenv('DRUPAL_DATABASE_PASSWORD'),
-      'prefix' => getenv('DRUPAL_DATABASE_PREFIX'),
-      'host' => getenv('DRUPAL_DATABASE_HOST'),
-      'port' => getenv('DRUPAL_DATABASE_PORT'),
-    ];
-
-You may also want to set a `DRUPAL_HASH_SALT` environment variable to drive the `$settings['hash_salt']` setting.
-
-### Custom Apache document root
-
-The default Apache document root is `/var/www/html`. If your codebase needs to use a different docroot (e.g. `/var/www/html/web` for Composer-built Drupal projects), you should set the environment variable `APACHE_DOCUMENT_ROOT` to the appropriate directory, and the container will change the docroot when it starts up.
-
-## Management with Ansible
-
-### Prerequisites
-
-Before using this project to build and maintain Drupal images for Docker, you need to have the following installed:
-
-  - [Docker Community Edition](https://docs.docker.com/engine/installation/) (for Mac, Windows, or Linux)
-  - [Ansible](http://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
-
-### Build the image
-
-Make sure Docker is running, and run the playbook to build the container image:
-
-    ansible-playbook main.yml
-
-    # Or just build one platform version (e.g. x86):
-    ansible-playbook main.yml --extra-vars "{build_amd64: true, build_arm64: false, build_arm32: false}"
-
-Once the image is built, you can run `docker images` to see the `drupal` image that was generated.
-
-> Note: If you get an error like `Failed to import docker-py`, run `pip install docker-py`.
-
-If you want to quickly run the image and test that the `docker-entrypoint.sh` script works to grab a copy of the Drupal codebase, run it with:
-
-    docker run -d -p 80:80 -v $PWD/web:/var/www/html:rw geerlingguy/drupal
-
-Then visit [http://localhost/](http://localhost/), and (after Drupal is downloaded and expanded) you should see the Drupal installer! You can drop the volume mount (`-v`) for a much faster startup, but then the codebase is downloaded and stored inside the container, and will vanish when you stop it.
-
-### Push the image to Docker Hub
-
-Currently, the process for updating this image on Docker Hub is manual. Eventually this will be automated via Travis CI.
-
-  1. Log into Docker Hub on the command line:
-
-         docker login --username=geerlingguy
-
-  1. Push to Docker Hub:
-
-         docker push geerlingguy/drupal:latest
-         docker push geerlingguy/drupal:latest-arm64
-         docker push geerlingguy/drupal:latest-arm32v7
+* [docker4php](https://github.com/wodby/docker4php)
+* [docker4laravel](https://github.com/wodby/docker4laravel)
+* [docker4wordpress](https://github.com/wodby/docker4wordpress)
+* [docker4ruby](https://github.com/wodby/docker4ruby)
+* [docker4python](https://github.com/wodby/docker4python)
+  
 
 ## License
 
-MIT / BSD
+This project is licensed under the MIT open source license.
 
-## Author Information
+[Apache]: https://wodby.com/docs/stacks/drupal/containers#apache
+[AthenaPDF]: https://wodby.com/docs/stacks/drupal/containers#athenapdf
+[Drupal node]: https://wodby.com/docs/stacks/drupal/containers#drupal-nodejs
+[Drupal]: https://wodby.com/docs/stacks/drupal/containers#php
+[Elasticsearch]: https://wodby.com/docs/stacks/elasticsearch
+[Kibana]: https://wodby.com/docs/stacks/elasticsearch
+[Mailhog]: https://wodby.com/docs/stacks/drupal/containers#mailhog
+[MariaDB]: https://wodby.com/docs/stacks/drupal/containers#mariadb
+[Memcached]: https://wodby.com/docs/stacks/drupal/containers#memcached
+[Nginx]: https://wodby.com/docs/stacks/drupal/containers#nginx
+[Node.js]: https://wodby.com/docs/stacks/drupal/containers#nodejs
+[OpenSMTPD]: https://wodby.com/docs/stacks/drupal/containers#opensmtpd
+[PHP]: https://wodby.com/docs/stacks/drupal/containers#php
+[PostgreSQL]: https://wodby.com/docs/stacks/drupal/containers#postgresql
+[Redis]: https://wodby.com/docs/stacks/drupal/containers#redis
+[Rsyslog]: https://wodby.com/docs/stacks/drupal/containers#rsyslog
+[Solr]: https://wodby.com/docs/stacks/drupal/containers#solr
+[Varnish]: https://wodby.com/docs/stacks/drupal/containers#varnish
+[Webgrind]: https://wodby.com/docs/stacks/drupal/containers#webgrind
+[XHProf viewer]: https://wodby.com/docs/stacks/php/containers#xhprof-viewer
 
-This container build was created in 2018 by [Jeff Geerling](https://www.jeffgeerling.com/), author of [Ansible for DevOps](https://www.ansiblefordevops.com/).
+[_/traefik]: https://hub.docker.com/_/traefik
+[arachnysdocker/athenapdf-service]: https://hub.docker.com/r/arachnysdocker/athenapdf-service
+[mailhog/mailhog]: https://hub.docker.com/r/mailhog/mailhog
+[phpmyadmin/phpmyadmin]: https://hub.docker.com/r/phpmyadmin/phpmyadmin
+[selenium/standalone-chrome]: https://hub.docker.com/r/selenium/standalone-chrome
+[wodby/adminer]: https://hub.docker.com/r/wodby/adminer
+[wodby/apache]: https://github.com/wodby/apache
+[wodby/drupal-node]: https://github.com/wodby/drupal-node
+[wodby/drupal-php]: https://github.com/wodby/drupal-php
+[wodby/drupal]: https://github.com/wodby/drupal
+[wodby/elasticsearch]: https://github.com/wodby/elasticsearch
+[wodby/kibana]: https://github.com/wodby/kibana
+[wodby/mariadb]: https://github.com/wodby/mariadb
+[wodby/memcached]: https://github.com/wodby/memcached
+[wodby/nginx]: https://github.com/wodby/nginx
+[wodby/node]: https://github.com/wodby/node
+[wodby/opensmtpd]: https://github.com/wodby/opensmtpd
+[wodby/postgres]: https://github.com/wodby/postgres
+[wodby/redis]: https://github.com/wodby/redis
+[wodby/rsyslog]: https://hub.docker.com/r/wodby/rsyslog
+[wodby/solr]: https://github.com/wodby/solr
+[wodby/varnish]: https://github.com/wodby/varnish
+[wodby/webgrind]: https://hub.docker.com/r/wodby/webgrind
+[wodby/xhprof]: https://hub.docker.com/r/wodby/xhprof
+[zookeeper]: https://hub.docker.com/_/zookeeper
